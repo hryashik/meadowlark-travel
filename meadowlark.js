@@ -2,6 +2,7 @@ const express = require('express')
 const {engine} = require('express-handlebars')
 const app = express()
 const port = process.env.PORT || 3000
+const handlers = require('./lib/handlers')
 
 app.engine('hbs', engine({
     layoutsDir: 'views/layouts',
@@ -10,20 +11,14 @@ app.engine('hbs', engine({
 }))
 app.set('view engine', 'hbs')
 app.use(express.static(__dirname + '/public'))
-app.get('/', (req, res) => {
-    res.render('home')
-})
-app.get('/about', (req, res) => {
-    res.render('about')
-})
-app.use((req, res) => {
-    res.status(404)
-    res.render('404')
-})
-app.use((err, req, res, next) => {
-    console.error(err)
-    res.status(500)
-    res.render('500')
-})
 
-app.listen(port, () => console.log(`Server stars on ${port}`))
+app.get('/', handlers.home)
+app.get('/about', handlers.about)
+app.use(handlers.notFound)
+app.use(handlers.serverError)
+
+if(require.main === module) {
+    app.listen(port, () => console.log(`Server stars on ${port}`))
+} else {
+    module.exports = app
+}
