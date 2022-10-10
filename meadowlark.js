@@ -3,6 +3,7 @@ const {engine} = require('express-handlebars')
 const app = express()
 const port = process.env.PORT || 3000
 const handlers = require('./lib/handlers')
+const multiparty = require('multiparty')
 
 const tours = [
     {id: 0, name: "Худ-Ривер", price: 99.99},
@@ -31,7 +32,16 @@ app.get('/api/tours', (req, res) => {
 })
 app.get('/about', handlers.about)
 app.get('/newsletter-signup', handlers.newsLetter)
+app.get('/contest/vacation-photo', handlers.vacationPhoto)
+app.get('/contest/vacation-photo-thank-you', handlers.vacationPhotoThankYou)
 app.post('/api/newsletter-signup', handlers.api.newsLetterSignup)
+app.post('/contest/vacation-photo/:year/:month', (req, res) => {
+    const form = new multiparty.Form()
+    form.parse(req, (err, fields, files) => {
+        if(err) return res.status(500).send({error: err.message})
+        handlers.api.vacationPhotoContest(req, res, fields, files)
+    })
+})
 app.use(handlers.notFound)
 app.use(handlers.serverError)
 
